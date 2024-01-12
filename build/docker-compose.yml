@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  mysql:
+    container_name: mysql
+    build:
+      context: ./dockerfile
+      dockerfile: mysql/dockerfile
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: my_user
+      MYSQL_PASSWORD: my_password
+    volumes:
+      - ./volume/mysql_data:/var/lib/mysql
+  flyway:
+    image: flyway/flyway:latest
+    container_name: flyway
+    environment:
+      - FLYWAY_URL=jdbc:mysql://mysql:3306/my_database
+      - FLYWAY_USER=my_user
+      - FLYWAY_PASSWORD=my_password
+    volumes:
+      - ./dockerfile/flyway/mysql/migrations:/flyway/sql  # 迁移脚本的挂载目录
+    #      - ./volume/flyway_mysql_conf:/flyway/conf  # Flyway 配置文件的挂载目录
+    depends_on:
+      - mysql
+    command: [ "migrate" ]  # 指定要执行的 Flyway 命令
